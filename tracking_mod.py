@@ -48,29 +48,41 @@ class HandDetector:
 
     def count_fingers(self, lm_list):
         tip_ids = [4, 8, 12, 16, 20]
+        pip_ids = [2, 6, 10, 14, 18]
+
         fingers = []
 
-        if lm_list[tip_ids[0]][1] < lm_list[tip_ids[0]-1][1]:
-            fingers.append(1)
-        else:
-            fingers.append(0)
+        thumb_open = lm_list[tip_ids[0]][1] < lm_list[pip_ids[0]][1] - 15
+        fingers.append(1 if thumb_open else 0)
 
-        for tip_id in tip_ids[1:]:
-            if lm_list[tip_id][2] < lm_list[tip_id-2][2]:
-                fingers.append(1)
-            else:
-                fingers.append(0)
-        return sum(fingers)
+        for tip, pip in zip(tip_ids[1:], pip_ids[1:]):
+            fingers.append(1 if lm_list[tip][2] < lm_list[pip][2] - 15 else 0)
 
-    def play_rps(self, hand_lms):
-        fingers = self.count_fingers(hand_lms)
-        if fingers == 0:
-            return "ROCK"
-        elif fingers == 2:
+        return fingers
+
+    def play_rps(self, lm_list):
+        fingers = self.count_fingers(lm_list)
+
+        for finger in fingers:
+            print(finger)
+
+        if (fingers[1] == 1 and fingers[2] == 1 and
+                sum(fingers) == 2):
             return "SCISSORS"
-        elif fingers == 5:
+
+        elif fingers[0] == 1 and sum(fingers) == 1:
+            return "THANK YOU, I TRY"
+
+        elif sum(fingers[1:]) == 0:
+            return "ROCK"
+
+        elif sum(fingers) >= 4:
             return "PAPER"
-        return "This is not a valid move."
+
+        elif fingers[2] == 1 and sum(fingers) == 1:
+            return "THAT'S NOT VERY NICE"
+
+        return "INVALID MOVE"
 
 
 def main():
