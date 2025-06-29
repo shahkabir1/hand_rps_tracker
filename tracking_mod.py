@@ -63,9 +63,6 @@ class HandDetector:
     def play_rps(self, lm_list):
         fingers = self.count_fingers(lm_list)
 
-        for finger in fingers:
-            print(finger)
-
         if (fingers[1] == 1 and fingers[2] == 1 and
                 sum(fingers) == 2):
             return "SCISSORS"
