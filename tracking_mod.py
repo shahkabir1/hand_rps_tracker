@@ -1,11 +1,13 @@
 import cv2
 import mediapipe as mp
 import time
+import random
 
 
 class HandDetector:
     def __init__(self, mode=False, max_hands=2, det_confidence=0.5,
                  track_con=0.5):
+        self.results = None
         self.mode = mode
         self.maxHands = max_hands
         self.detConfidence = det_confidence
@@ -30,19 +32,45 @@ class HandDetector:
                                                self.mpHands.HAND_CONNECTIONS)
         return img
 
-    def find_position(self, img, hand_num=0, draw=True):
+    def find_position(self, img, hand_num=0, draw=False):
 
         lm_list = []
         if self.results.multi_hand_landmarks:
             my_hand = self.results.multi_hand_landmarks[hand_num]
-            for id, lm in enumerate(my_hand.landmark):
+            for id_num, lm in enumerate(my_hand.landmark):
                 h, w, c = img.shape
                 cx, cy = int(lm.x*w), int(lm.y*h)
-                lm_list.append([id, cx, cy])
+                lm_list.append([id_num, cx, cy])
                 if draw:
                     cv2.circle(img, (cx, cy), 10, (255, 0, 255),
                                cv2.FILLED)
         return lm_list
+
+    def count_fingers(self, lm_list):
+        tip_ids = [4, 8, 12, 16, 20]
+        fingers = []
+
+        if lm_list[tip_ids[0]][1] < lm_list[tip_ids[0]-1][1]:
+            fingers.append(1)
+        else:
+            fingers.append(0)
+
+        for tip_id in tip_ids[1:]:
+            if lm_list[tip_id][2] < lm_list[tip_id-2][2]:
+                fingers.append(1)
+            else:
+                fingers.append(0)
+        return sum(fingers)
+
+    def play_rps(self, hand_lms):
+        fingers = self.count_fingers(hand_lms)
+        if fingers == 0:
+            return "ROCK"
+        elif fingers == 2:
+            return "SCISSORS"
+        elif fingers == 5:
+            return "PAPER"
+        return "This is not a valid move."
 
 
 def main():
@@ -54,8 +82,14 @@ def main():
         success, img = cap.read()
         img = detector.find_hands(img)
         lm_list = detector.find_position(img)
-        if len(lm_list) != 0:
-            print(lm_list[4])
+        if len(lm_list) > 0:
+            gesture = detector.play_rps(lm_list)
+            cv2.putText(img, f"Player: {gesture}", (10, 90),
+                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 2)
+
+            computer_play = random.choice(["ROCK", "PAPER", "SCISSORS"])
+            cv2.putText(img, f"Computer: {computer_play}", (10, 120),
+                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
 
         cTime = time.time()
         fps = 1 / (cTime - pTime)
@@ -64,7 +98,7 @@ def main():
         cv2.putText(img, str(int(fps)), (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 3,
                     (255, 0, 255), 3)
 
-        cv2.imshow("Image", img)
+        cv2.imshow("Rock, Paper, Scissors!", img)
         cv2.waitKey(1)
 
 
