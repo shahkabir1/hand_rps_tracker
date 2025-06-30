@@ -33,3 +33,11 @@ A fun real-time Rock, Paper, Scissors game using your webcam! Built with Python,
 ### Install dependencies:
 ```bash
 pip install opencv-python mediapipe
+```
+
+---
+
+## 🚀 Running the Game
+```bash
+python tracking_mod.py
+```
