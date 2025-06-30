@@ -20,7 +20,7 @@ A fun real-time Rock, Paper, Scissors game using your webcam! Built with Python,
 3. Compares your move with a random computer move
 4. Declares winner based on traditional RPS rules
 
-# Note: To ensure your gesture is recognized when playing Scissors, please raise your thumb along with your fingers.
+### Note: To ensure your gesture is recognized when playing Scissors, please raise your thumb along with your fingers.
 
 ---
 
