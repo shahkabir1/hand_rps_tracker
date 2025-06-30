@@ -39,7 +39,7 @@ class HandDetector:
             my_hand = self.results.multi_hand_landmarks[hand_num]
             for id_num, lm in enumerate(my_hand.landmark):
                 h, w, c = img.shape
-                cx, cy = int(lm.x*w), int(lm.y*h)
+                cx, cy = int(lm.x * w), int(lm.y * h)
                 lm_list.append([id_num, cx, cy])
                 if draw:
                     cv2.circle(img, (cx, cy), 10, (255, 0, 255),
@@ -83,10 +83,16 @@ class HandDetector:
 
 
 def main():
-    pTime = 0
-    cTime = 0
+    prev_time = 0
+    curr_time = 0
     cap = cv2.VideoCapture(0)
     detector = HandDetector()
+
+    prev_gesture = None
+    computer_play = random.choice(["ROCK", "PAPER", "SCISSORS"])
+
+    winning_pairs = {"ROCK": "SCISSORS", "SCISSORS": "PAPER", "PAPER": "ROCK"}
+
     while True:
         success, img = cap.read()
         img = detector.find_hands(img)
@@ -95,14 +101,28 @@ def main():
             gesture = detector.play_rps(lm_list)
             cv2.putText(img, f"Player: {gesture}", (10, 90),
                         cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 2)
+            if gesture != "INVALID MOVE" and gesture != prev_gesture:
+                computer_play = random.choice(["ROCK", "PAPER", "SCISSORS"])
+                prev_gesture = gesture
 
-            computer_play = random.choice(["ROCK", "PAPER", "SCISSORS"])
+                if gesture == computer_play:
+                    result_text = "DRAW!"
+                elif winning_pairs.get(gesture) == computer_play:
+                    result_text = "YOU WIN!"
+                else:
+                    result_text = "YOU LOSE!"
+
             cv2.putText(img, f"Computer: {computer_play}", (10, 120),
                         cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
+            if prev_gesture:
+                cv2.putText(img, result_text, (10, 140),
+                            cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 2)
+        else:
+            prev_gesture = None
 
-        cTime = time.time()
-        fps = 1 / (cTime - pTime)
-        pTime = cTime
+        curr_time = time.time()
+        fps = 1 / (curr_time - prev_time)
+        prev_time = curr_time
 
         cv2.putText(img, str(int(fps)), (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 3,
                     (255, 0, 255), 3)
