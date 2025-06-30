@@ -38,6 +38,9 @@ pip install opencv-python mediapipe
 ---
 
 ## 🚀 Running the Game
+
+The title of the file which contains the game is "tracking_mod.py". To run it, please use the command below or use the "Run" button in your IDE.
+
 ```bash
 python tracking_mod.py
 ```
